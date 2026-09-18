@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>КПРФ — Выборы 18–20 сентября</title>
+    <style>
+        /* Сброс стилей и базовая настройка */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            background: #f8f8f8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #000;
+            background: #f8f8f8;
+            overflow-x: hidden;
+        }
+
+        /* страховка стыка секций: любой зазор — светло-серый, а не красный */
+        .main-content {
+            background: #f8f8f8;
+        }
+
+        .info-section,
+        .final-section {
+            border: 0;
+            outline: 0;
+            box-shadow: none;
+        }
+
+        /* Навигационная панель с логотипом */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(-100%);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .navbar.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-img {
+            width: 56px;
+            height: auto;
+            display: block;
+            filter: drop-shadow(0 2px 8px rgba(204, 0, 0, 0.4));
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .logo-img:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 0.1em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #CC0000;
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #CC0000;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Первый экран - приветствие */
+        .intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #CC0000 0%, #8B0000 50%, #660000 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeOut 1.5s cubic-bezier(0.4, 0, 0.2, 1) 4s forwards;
+            overflow: hidden;
+        }
+
+        .intro-screen::before {
+            content: '';
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iOTAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI0ZGRkZGRiIvPjxyZWN0IHk9IjIwMCIgd2lkdGg9IjkwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMwMDM5QTYiLz48cmVjdCB5PSI0MDAiIHdpZHRoPSI5MDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRDUyQjFFIi8+PC9zdmc+');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.25;
+            transform: rotate(-12deg) scale(1.3);
+            animation: introFlagFloat 15s ease-in-out infinite;
+            filter: blur(3px);
+        }
+
+        .intro-screen::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: introGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes introFlagFloat {
+            0%, 100% {
+                transform: rotate(-12deg) scale(1.3) translate(0, 0);
+            }
+            50% {
+                transform: rotate(-15deg) scale(1.35) translate(20px, -10px);
+            }
+        }
+
+        @keyframes introGlow {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1.1);
+            }
+        }
+
+        .intro-logo {
+            width: min(280px, 60vw);
+            aspect-ratio: 1 / 1;
+            height: auto;
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 2;
+            animation: logoAppear 1.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+            filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.45));
+            border-radius: 6px;
+        }
+
+        .logo-img {
+            border-radius: 4px;
+        }
+
+        @keyframes logoAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.5) rotateY(180deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotateY(0deg);
+            }
+        }
+
+        .intro-screen h1 {
+            font-size: clamp(2rem, 7vw, 5rem);
+            font-weight: 800;
+            color: #fff;
+            text-align: center;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 2;
+            animation: fadeInUp 1s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both;
+            padding: 0 2rem;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(60px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+                visibility: visible;
+            }
+            70% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                visibility: hidden;
+                transform: scale(1.05);
+            }
+        }
+
+        /* Основной контейнер */
+        .main-content {
+            opacity: 0;
+            animation: showContent 1.5s cubic-bezier(0.4, 0, 0.2, 1) 5s forwards;
+        }
+
+        @keyframes showContent {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Секция с флагом */
+        .flag-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #8B0000 0%, #660000 10%, #330000 30%, #1a0000 55%, #000 85%, #000 100%);
+            padding: 6rem 2rem 2rem;
+            position: relative;
+            overflow: hidden;
+            margin: 0;
+        }
+
+        /* Фон с флагом РФ под наклоном */
+        .flag-section::before {
+            content: '';
+            position: absolute;
+            top: -15%;
+            left: -15%;
+            width: 130%;
+            height: 130%;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iOTAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI0ZGRkZGRiIvPjxyZWN0IHk9IjIwMCIgd2lkdGg9IjkwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiMwMDM5QTYiLz48cmVjdCB5PSI0MDAiIHdpZHRoPSI5MDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjRDUyQjFFIi8+PC9zdmc+');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.34;
+            transform: rotate(-18deg) scale(1.2);
+            animation: bgFloat 30s ease-in-out infinite;
+            pointer-events: none;
+            filter: blur(2px) brightness(0.85);
+        }
+
+        .flag-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* виньетка + мягкое затухание низа в чистый чёрный для бесшовного стыка */
+            background:
+                linear-gradient(180deg, transparent 55%, rgba(0, 0, 0, 0.55) 80%, rgba(0, 0, 0, 0.95) 93%, #000 100%),
+                radial-gradient(ellipse at 50% 30%, transparent 20%, rgba(0, 0, 0, 0.5) 70%, rgba(0, 0, 0, 0.8) 100%);
+            pointer-events: none;
+        }
+
+        /* фото-флаг стоит на месте: только лёгкое «дыхание», без сдвигов и качания */
+        @keyframes bgFloat {
+            0%, 100% {
+                transform: rotate(-18deg) scale(1.2);
+                opacity: 0.34;
+            }
+            50% {
+                transform: rotate(-18deg) scale(1.24);
+                opacity: 0.38;
+            }
+        }
+
+        .flag-container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            height: 600px;
+            perspective: 1500px;
+        }
+
+        .flag-text {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            width: 100%;
+        }
+
+        .flag-text h2 {
+            font-size: clamp(2.5rem, 7vw, 6rem);
+            font-weight: 900;
+            color: #f5f5f5;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            line-height: 1.4;
+            text-shadow: 3px 3px 15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 255, 255, 0.2);
+            margin: 0;
+            /* текст поднимается после исчезновения интро, затем мягкое свечение */
+            animation: flagTextIn 1.1s cubic-bezier(0.4, 0, 0.2, 1) 5.2s both, textGlow 4s ease-in-out 6.4s infinite;
+        }
+
+        @keyframes flagTextIn {
+            from {
+                opacity: 0;
+                transform: translateY(45px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes textGlow {
+            0%, 100% {
+                text-shadow: 3px 3px 15px rgba(0, 0, 0, 0.7), 0 0 30px rgba(255, 255, 255, 0.2);
+            }
+            50% {
+                text-shadow: 3px 3px 20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        /* Информационная секция — сверху спокойная чёрная зона для мягкого стыка */
+        .info-section {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #000 0%, #000 10%, #160000 14%, #2a0000 19%, #4a1010 26%, #5a2020 32%, #8a4040 40%, #c0a0a0 50%, #e0d0d0 58%, #f8f8f8 70%, #f8f8f8 100%);
+            padding: clamp(4rem, 10vw, 8rem) 2rem;
+            position: relative;
+            border: none;
+            outline: none;
+            margin: 0;
+        }
+
+        .info-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .info-title {
+            font-size: clamp(2rem, 5vw, 4rem);
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-shadow: 0 2px 18px rgba(0,0,0,0.65);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1), transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .info-title.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .info-subtitle {
+            font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+            text-align: center;
+            color: #f5f5f5;
+            font-weight: 400;
+            text-shadow: 0 2px 14px rgba(0,0,0,0.6);
+            margin-bottom: clamp(3rem, 8vw, 6rem);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.7;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.9s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+        }
+
+        .info-subtitle.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 4rem;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #000 0%, #1a1a1a 100%);
+            color: #fff;
+            padding: 3rem 2rem;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(60px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            /* двусторонняя анимация: появление и скрытие при скролле туда-обратно */
+            transition: opacity 0.7s cubic-bezier(0.4, 0, 0.2, 1), transform 0.7s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s ease;
+        }
+
+        .card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #CC0000 0%, #ff3333 100%);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(204, 0, 0, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card:hover::after {
+            opacity: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 25px 70px rgba(204, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-number {
+            font-size: 3rem;
+            font-weight: 900;
+            color: #CC0000;
+            margin-bottom: 1rem;
+            line-height: 1;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .card:hover .card-number {
+            transform: scale(1.1);
+            color: #ff3333;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: color 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-description {
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #ccc;
+            font-weight: 300;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Финальная секция — бесшовный переход, без полоски и псевдо-элементов сверху */
+        .final-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f8f8f8;
+            background-image: linear-gradient(180deg, #f8f8f8 0%, #f8f8f8 18%, #eedddd 32%, #d9b3b3 46%, #b57e7e 60%, #8a3a3a 74%, #b00000 88%, #CC0000 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+            border: none;
+            outline: none;
+            margin: 0;
+        }
+
+        .final-section::before,
+        .final-section::after {
+            content: none;
+            display: none;
+        }
+
+        .final-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        /* анимация появления 1-в-1 как у "О партии" — по скроллу */
+        .final-title {
+            font-size: clamp(3rem, 10vw, 8rem);
+            font-weight: 800;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            line-height: 1.1;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 18px rgba(0,0,0,0.65);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1), transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .final-title.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .final-subtitle {
+            font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+            color: #f5f5f5;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            line-height: 1.7;
+            text-shadow: 0 2px 14px rgba(0,0,0,0.6);
+            margin-bottom: 3rem;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, transform 0.9s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+        }
+
+        .final-subtitle.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1.5rem 4rem;
+            background: #fff;
+            color: #CC0000;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            text-decoration: none;
+            letter-spacing: 0.1em;
+            border: 3px solid #fff;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1) 0.4s, transform 0.9s cubic-bezier(0.4, 0, 0.2, 1) 0.4s, background 0.4s ease, color 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .cta-button.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: #000;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cta-button:hover::before {
+            width: 500px;
+            height: 500px;
+        }
+
+        .cta-button span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-button:hover {
+            color: #fff;
+            border-color: #fff;
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+
+            .logo-img {
+                width: 46px;
+                height: auto;
+            }
+
+            .logo-text {
+                font-size: 1.2rem;
+            }
+
+            .flag-section {
+                padding: 5rem 1rem 2rem;
+            }
+
+            .flag-container {
+                height: 400px;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .card {
+                padding: 2rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0.8rem 1rem;
+            }
+
+            .logo-img {
+                width: 42px;
+                height: auto;
+            }
+
+            .logo-text {
+                font-size: 1rem;
+            }
+
+            .flag-text h2 {
+                font-size: 2rem;
+            }
+
+            .flag-text .dates {
+                font-size: 1.5rem;
+            }
+
+            .cta-button {
+                padding: 1.2rem 2.5rem;
+                font-size: 1rem;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Навигационная панель -->
+    <nav class="navbar">
+        <div class="logo-container">
+            <!-- Официальный логотип КПРФ (фото 2): квадрат 1:1 -->
+            <svg class="logo-img" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Логотип КПРФ">
+                <rect x="0" y="0" width="200" height="200" rx="0" fill="#CC0000"/>
+                <defs>
+                    <path id="kprfCircleNav" d="M100,78 m-54,0 a54,54 0 1,1 108,0 a54,54 0 1,1 -108,0"/>
+                </defs>
+                <text font-family="Arial, sans-serif" font-size="12.5" font-weight="700" fill="#fff" letter-spacing="1.2">
+                    <textPath href="#kprfCircleNav" startOffset="0">РОССИЯ • ТРУД • НАРОДОВЛАСТИЕ • СОЦИАЛИЗМ •</textPath>
+                </text>
+                <!-- раскрытая книга -->
+                <path d="M60 66 Q80 61 100 66 Q120 61 140 66 L140 102 Q120 97 100 102 Q80 97 60 102 Z" fill="none" stroke="#fff" stroke-width="2.8" stroke-linejoin="round"/>
+                <line x1="100" y1="66" x2="100" y2="102" stroke="#fff" stroke-width="1.8"/>
+                <!-- серп -->
+                <path d="M72 102 Q84 94 93 83 Q102 72 113 56 Q109 74 99 88 Q89 100 72 102 Z" fill="#fff"/>
+                <!-- молот -->
+                <g fill="#fff">
+                    <rect x="70" y="62" width="27" height="11" rx="2" transform="rotate(-38 83 67)"/>
+                    <rect x="79" y="69" width="7.5" height="40" rx="2" transform="rotate(-38 83 89)"/>
+                </g>
+                <text x="100" y="176" text-anchor="middle" font-family="Arial, sans-serif" font-size="40" font-weight="900" fill="#fff" letter-spacing="2">КПРФ</text>
+            </svg>
+            <span class="logo-text">КПРФ</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#flag">Выборы</a></li>
+            <li><a href="#info">О партии</a></li>
+            <li><a href="#vote">Голосовать</a></li>
+        </ul>
+    </nav>
+
+    <!-- Вступительный экран : официальный логотип (фото 2), квадрат 1:1 -->
+    <div class="intro-screen">
+            <svg class="intro-logo" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Логотип КПРФ">
+                <rect x="0" y="0" width="300" height="300" rx="0" fill="#CC0000"/>
+                <defs>
+                    <path id="kprfCircleIntro" d="M150,118 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"/>
+                </defs>
+                <text font-family="Arial, sans-serif" font-size="18.5" font-weight="700" fill="#fff" letter-spacing="2">
+                    <textPath href="#kprfCircleIntro" startOffset="0">РОССИЯ • ТРУД • НАРОДОВЛАСТИЕ • СОЦИАЛИЗМ •</textPath>
+                </text>
+                <!-- раскрытая книга -->
+                <path d="M88 100 Q119 93 150 100 Q181 93 212 100 L212 152 Q181 145 150 152 Q119 145 88 152 Z" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+                <line x1="150" y1="100" x2="150" y2="152" stroke="#fff" stroke-width="2.5"/>
+                <!-- серп -->
+                <path d="M108 152 Q128 139 141 123 Q154 107 170 84 Q163 112 148 132 Q133 149 108 152 Z" fill="#fff"/>
+                <!-- молот -->
+                <g fill="#fff">
+                    <rect x="106" y="94" width="40" height="16" rx="2.5" transform="rotate(-38 126 102)"/>
+                    <rect x="119" y="104" width="11" height="58" rx="2.5" transform="rotate(-38 124 133)"/>
+                </g>
+                <!-- КПРФ с запасом от круговой надписи -->
+                <text x="150" y="262" text-anchor="middle" font-family="Arial, sans-serif" font-size="62" font-weight="900" fill="#fff" letter-spacing="3">КПРФ</text>
+            </svg>
+        <h1>КПРФ ПРИВЕТСТВУЕТ</h1>
+    </div>
+
+    <!-- Основной контент -->
+    <div class="main-content">
+
+        <!-- Секция с флагом -->
+        <section class="flag-section" id="flag">
+            <div class="flag-container">
+                <div class="flag-text">
+                    <h2>ВЫБОРЫ ПАРТИИ<br>18–20 СЕНТЯБРЯ</h2>
+                </div>
+            </div>
+        </section>
+
+        <!-- Информационная секция: фон виден всегда, анимируется только текст -->
+        <section class="info-section" id="info">
+            <div class="info-container">
+                <h2 class="info-title">О партии</h2>
+                <p class="info-subtitle">
+                    Коммунистическая партия Российской Федерации — крупнейшая левая политическая сила страны, 
+                    выступающая за социальную справедливость, народовластие и достойную жизнь каждого человека.
+                </p>
+
+                <div class="cards-grid">
+                    <div class="card">
+                        <div class="card-number">01</div>
+                        <h3 class="card-title">Социальная справедливость</h3>
+                        <p class="card-description">
+                            Достойные зарплаты, пенсии и социальные гарантии для всех граждан. 
+                            Бесплатное образование и здравоохранение.
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-number">02</div>
+                        <h3 class="card-title">Народная власть</h3>
+                        <p class="card-description">
+                            Реальное участие граждан в управлении государством. 
+                            Контроль народа над природными ресурсами и крупной собственностью.
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-number">03</div>
+                        <h3 class="card-title">Сильная экономика</h3>
+                        <p class="card-description">
+                            Развитие промышленности и сельского хозяйства. 
+                            Защита отечественного производителя и создание рабочих мест.
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-number">04</div>
+                        <h3 class="card-title">Суверенитет страны</h3>
+                        <p class="card-description">
+                            Независимая внешняя политика в интересах России. 
+                            Защита традиционных ценностей и культуры народа.
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-number">05</div>
+                        <h3 class="card-title">Борьба с коррупцией</h3>
+                        <p class="card-description">
+                            Жёсткий контроль за доходами чиновников. 
+                            Наказание за злоупотребления и преступления против народа.
+                        </p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-number">06</div>
+                        <h3 class="card-title">Достойная жизнь</h3>
+                        <p class="card-description">
+                            Доступное жильё для молодых семей. 
+                            Поддержка многодетных семей и пенсионеров.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Финальная секция -->
+        <section class="final-section" id="vote">
+            <div class="final-content">
+                <h2 class="final-title">ГОЛОСУЙТЕ<br>ЗА КПРФ</h2>
+                <p class="final-subtitle">18–20 СЕНТЯБРЯ 2026</p>
+                <a href="#" class="cta-button">
+                    <span>ВАШ ГОЛОС ВАЖЕН</span>
+                </a>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // Показать навигацию после загрузки
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.querySelector('.navbar').classList.add('visible');
+            }, 3500);
+        });
+
+        // Анимация появления элементов при прокрутке
+        const observerOptions = {
+            threshold: 0.15,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        // Двусторонние анимации: класс снимается при уходе из вида и возвращается при возврате
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                } else {
+                    entry.target.classList.remove('visible');
+                }
+            });
+        }, observerOptions);
+
+        // Наблюдаем за заголовком и подзаголовком "О партии" + финальным блоком (та же анимация)
+        document.querySelectorAll('.info-title, .info-subtitle, .final-title, .final-subtitle, .cta-button').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Анимация карточек с задержкой — тоже в две стороны
+        const cards = document.querySelectorAll('.card');
+        let cardTimers = [];
+        const cardObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    cardTimers.forEach(clearTimeout);
+                    cardTimers = [];
+                    cards.forEach((card, idx) => {
+                        card.style.transitionDelay = (idx * 110) + 'ms';
+                        cardTimers.push(setTimeout(() => {
+                            card.classList.add('visible');
+                        }, 30));
+                    });
+                } else {
+                    cardTimers.forEach(clearTimeout);
+                    cardTimers = [];
+                    cards.forEach((card) => {
+                        card.style.transitionDelay = '0ms';
+                        card.classList.remove('visible');
+                    });
+                }
+            });
+        }, observerOptions);
+
+        const cardsGrid = document.querySelector('.cards-grid');
+        if (cardsGrid) {
+            cardObserver.observe(cardsGrid);
+        } else if (cards.length) {
+            cardObserver.observe(cards[0]);
+        }
+
+        // Плавная прокрутка к секциям
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const offset = 80;
+                    const targetPosition = target.offsetTop - offset;
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Автоматическая прокрутка после вступительного экрана
+        setTimeout(() => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }, 3800);
+    </script>
+
+</body>
+</html>
